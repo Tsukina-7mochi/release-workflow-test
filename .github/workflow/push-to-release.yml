@@ -13,6 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Debug output
+        run: echo "${{ toJson(github) }}"
+
       - name: Get commit URL
         env:
           COMMITS_URL: ${{ github.event.pull_request.base.repo.commits_url }}
@@ -27,12 +30,16 @@ jobs:
 
       - name: Output mode
         id: output-mode
+        env:
+          IS_MAJOR: ${{ contains(github.event.commit.body, "[release major]") }}
+          IS_MINOT: ${{ contains(github.event.commit.body, "[release minor]") }}
+          IS_PATCH: ${{ contains(github.event.commit.body, "[release patch]") }}
         run: |
-          if [[ "$MESSAGE" =~ "[release major]" ]]; then
+          if [[ "$IS_MAJOR" == "true" ]]; then
             MODE="M"
-          elif [[ "$MESSAGE" =~ "[release minor]" ]]; then
+          elif [[ "$IS_MINOR" == "true" ]]; then
             MODE="m"
-          elif [[ "$MESSAGE" =~ "[release minor]" ]]; then
+          elif [[ "$IS_PATCH" == "true" ]]; then
             MODE="p"
           else
             MODE="none"
@@ -43,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     needs: get-release-mode
-    if: needs.get-release-mode.outputs.mode != 'none'
+    if: ${{ needs.get-release-mode.outputs.mode != 'none' }}
     steps:
       - uses: actions/checkout@v3
 
