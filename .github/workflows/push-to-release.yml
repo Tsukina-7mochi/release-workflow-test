@@ -18,7 +18,7 @@ jobs:
 
       - name: Get first line of commit message
         env:
-          MESSAGE: github.event.head_commit.message
+          MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           echo -e "MESSAGE_1$MESSAGE" | head -n 1 >> $GITHUB_ENV
 
