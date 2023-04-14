@@ -31,9 +31,9 @@ jobs:
       - name: Output mode
         id: output-mode
         env:
-          IS_MAJOR: ${{ contains(github.event.commit.body, '[release major]'') }}
-          IS_MINOT: ${{ contains(github.event.commit.body, '[release minor]'') }}
-          IS_PATCH: ${{ contains(github.event.commit.body, '[release patch]'') }}
+          IS_MAJOR: ${{ contains(github.event.commit.body, '[release major]') }}
+          IS_MINOT: ${{ contains(github.event.commit.body, '[release minor]') }}
+          IS_PATCH: ${{ contains(github.event.commit.body, '[release patch]') }}
         run: |
           if [[ "$IS_MAJOR" == "true" ]]; then
             MODE="M"
