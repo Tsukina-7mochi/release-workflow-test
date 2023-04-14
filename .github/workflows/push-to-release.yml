@@ -48,11 +48,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Get latest version
+      - name: Get latest release version
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_NAME: ${{ github.repository }}
         run: |
-          JSON_TEXT=$(curl -sSL https://api.github.com/repos/$REPO_NAME/releases/latest)
+          JSON_TEXT=$(curl -sSL
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/$REPO_NAME/releases/latest
+          )
           TAG_NAME = $(echo "$JSON_TEXT" | jq ".commit.message" | sed -E 's/^"v?//' | sed -E 's/"$//')
           echo "VERSION=$TAG_NAME" >> GITHUB_ENV
 
@@ -60,39 +66,38 @@ jobs:
         run: |
           curl -sSL https://raw.githubusercontent.com/fmahnke/shell-semver/master/increment_version.sh > increment_version.sh
           VERSION=$(bash increment_version.sh -${{ needs.get-release-mode.outputs.mode }} $VERSION)
-          echo "VERSION=v$TAG_NAME" >> GITHUB_ENV
+          echo "TAG_NAME=v$VERSION" >> GITHUB_ENV
 
-      - name: Get commit URL
-        env:
-          COMMITS_URL: ${{ github.event.pull_request.base.repo.commits_url }}
-          SHA: ${{ github.sha }}
-        run: echo "COMMIT_URL=$COMMITS_URL" | sed -e "s#{/sha}#/$SHA#" >> $GITHUB_ENV
-
-      - name: Get commit message
-        run: |
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "MESSAGE<<$EOF" >> $GITHUB_ENV
-          JSON_TEXT=$(curl -sSL -H "Accept: application/vnd.github+json" $COMMIT_URL)
-          VERSION_STRING=$(echo "$JSON_TEXT" | jq ".commit.message" | sed -E 's/^"//' | sed -E 's/"$//')
-          echo -e "$VERSION_STRING" >> $GITHUB_ENV
-          echo "$EOF" >> $GITHUB_ENV
-
-      - name: Add tag ${{ env.VERSION }}
-        uses: rickstaa/action-create-tag@v1
-        id: create-tag
-        with:
-          tag: ${{ env.VERSION }}
-          tag_exists_error: true
-          commit_sha: ${{ github.sha }}
-          message: ${{ env.MESSAGE }}
-
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Add tag ${{ env.TAG_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.VERSION }}
-          release_name: Release ${{ env.VERSION }}
-          draft: false
-          prerelease: false
+          REPO_NAME: ${{ github.repository }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+          SHA: ${{ github.sha }}
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/$REPO_NAME/git/tags \
+            -d '{"tag":"$TAG_NAME","message":"$MESSAGE","object":"$SHA","type":"commit"}'
+
+      - name: Create release ${{ env.TAG_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_NAME: ${{ github.repository }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+          SHA: ${{ github.sha }}
+          NAME: Release ${{ env.TAG_NAME }}
+          DRAFT: false
+          PRERELEASE: false
+          GENERATE_RELEASE_NOTES: true
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/$REPO_NAME/releases \
+            -d '{"tag_name":"$TAG_NAME","target_commitish":"$SHA","name":"$NAME","body":"$MESSAGE","draft":$DRAFT,"prerelease":$PRERELEASE,"generate_release_notes":$GENERATE_RELEASE_NOTES}'
