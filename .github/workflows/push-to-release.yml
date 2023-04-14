@@ -60,13 +60,13 @@ jobs:
             https://api.github.com/repos/$REPO_NAME/releases/latest \
           )
           VERSION=$(echo "$JSON_TEXT" | jq ".commit.message" | sed -E 's/^"v?//' | sed -E 's/"$//')
-          echo "VERSION=$VERSION" >> GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Increase version
         run: |
           curl -sSL https://raw.githubusercontent.com/fmahnke/shell-semver/master/increment_version.sh > increment_version.sh
           VERSION=$(bash increment_version.sh -${{ needs.get-release-mode.outputs.mode }} $VERSION)
-          echo "TAG_NAME=v$VERSION" >> GITHUB_ENV
+          echo "TAG_NAME=v$VERSION" >> $GITHUB_ENV
 
       - name: Add tag ${{ env.TAG_NAME }}
         env:
