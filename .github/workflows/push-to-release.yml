@@ -16,24 +16,18 @@ jobs:
       - name: Debug output
         run: echo "${{ toJson(github) }}"
 
-      - name: Get commit URL
-        env:
-          COMMITS_URL: ${{ github.event.pull_request.base.repo.commits_url }}
-          SHA: ${{ github.sha }}
-        run: echo "COMMIT_URL=$COMMITS_URL" | sed -e "s#{/sha}#/$SHA#" >> $GITHUB_ENV
-
       - name: Get first line of commit message
+        env:
+          MESSAGE: github.event.head_commit.message
         run: |
-          JSON_TEXT=$(curl -sSL -H "Accept: application/vnd.github+json" $COMMIT_URL)
-          VERSION_STRING=$(echo "$JSON_TEXT" | jq ".commit.message" | sed -E 's/^"//' | sed -E 's/"$//')
-          echo -e "$VERSION_STRING" | head -n 1 >> $GITHUB_ENV
+          echo -e "MESSAGE_1$MESSAGE" | head -n 1 >> $GITHUB_ENV
 
       - name: Output mode
         id: output-mode
         env:
-          IS_MAJOR: ${{ contains(github.event.commit.body, '[release major]') }}
-          IS_MINOT: ${{ contains(github.event.commit.body, '[release minor]') }}
-          IS_PATCH: ${{ contains(github.event.commit.body, '[release patch]') }}
+          IS_MAJOR: ${{ contains(env.MESSAGE_1, '[release major]') }}
+          IS_MINOT: ${{ contains(env.MESSAGE_1, '[release minor]') }}
+          IS_PATCH: ${{ contains(env.MESSAGE_1, '[release patch]') }}
         run: |
           if [[ "$IS_MAJOR" == "true" ]]; then
             MODE="M"
