@@ -55,7 +55,7 @@ jobs:
         run: |
           JSON_TEXT=$(curl -sSL \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN"\
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/$REPO_NAME/releases/latest \
           )
@@ -78,7 +78,7 @@ jobs:
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN"\
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/$REPO_NAME/git/tags \
             -d '{"tag":"$TAG_NAME","message":"$MESSAGE","object":"$SHA","type":"commit"}'
@@ -97,7 +97,7 @@ jobs:
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN"\
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/$REPO_NAME/releases \
             -d '{"tag_name":"$TAG_NAME","target_commitish":"$SHA","name":"$NAME","body":"$MESSAGE","draft":$DRAFT,"prerelease":$PRERELEASE,"generate_release_notes":$GENERATE_RELEASE_NOTES}'
