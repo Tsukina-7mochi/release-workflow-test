@@ -13,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Debug output
-        run: echo "${{ toJson(github) }}"
-
       - name: Get first line of commit message
         env:
           MESSAGE: ${{ github.event.head_commit.message }}
