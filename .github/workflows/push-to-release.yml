@@ -26,7 +26,7 @@ jobs:
         id: output-mode
         env:
           IS_MAJOR: ${{ contains(env.MESSAGE_1, '[release major]') }}
-          IS_MINOT: ${{ contains(env.MESSAGE_1, '[release minor]') }}
+          IS_MINOR: ${{ contains(env.MESSAGE_1, '[release minor]') }}
           IS_PATCH: ${{ contains(env.MESSAGE_1, '[release patch]') }}
         run: |
           if [[ "$IS_MAJOR" == "true" ]]; then
