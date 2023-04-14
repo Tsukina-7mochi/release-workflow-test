@@ -20,7 +20,7 @@ jobs:
         env:
           MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          echo -e "MESSAGE_1$MESSAGE" | head -n 1 >> $GITHUB_ENV
+          echo -e "MESSAGE_1=$MESSAGE" | head -n 1 >> $GITHUB_ENV
 
       - name: Output mode
         id: output-mode
