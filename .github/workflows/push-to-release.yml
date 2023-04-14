@@ -59,7 +59,9 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/$REPO_NAME/releases/latest \
           )
+          echo "$JSON_TEXT"
           VERSION=$(echo "$JSON_TEXT" | jq ".commit.message" | sed -E 's/^"v?//' | sed -E 's/"$//')
+          echo "$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Increase version
